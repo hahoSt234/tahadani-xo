@@ -37,3 +37,14 @@ If you are a developer and want to run this project locally on your machine, fol
    ```bash
    git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
    cd your-repo-name
+   
+2-**Install Dependencies:**
+
+Bash
+pip install flask
+
+3-**Run the Application:**
+Bash
+python app.py
+4-**Play the Game:**
+Open your browser and navigate to: http://127.0.0.1:5000
