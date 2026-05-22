@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAHADANI — 3-Pieces Tic-Tac-Toe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0eef8;
+    --surface: #ffffff;
+    --surface2: #f7f5ff;
+    --purple: #7c5cbf;
+    --purple-dark: #5e3fa3;
+    --purple-light: #c4b5e8;
+    --pink: #e87fa0;
+    --pink-light: #f9d0dd;
+    --green: #5ecf9a;
+    --text: #2d2060;
+    --muted: #9b8ec4;
+    --border: #e4ddf5;
+    --shadow: rgba(124,92,191,0.15);
+    --x-color: #7c5cbf;
+    --o-color: #e87fa0;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+
+  /* SCREENS */
+  .screen { display:none; min-height:100vh; }
+  .screen.active { display:flex; }
+
+  /* ── LANDING ── */
+  #screen-landing {
+    flex-direction:column;
+    background:linear-gradient(135deg,#f0eef8 0%,#ece7f8 50%,#fae8ef 100%);
+    position:relative; overflow:hidden;
+  }
+  #screen-landing::before {
+    content:''; position:absolute; width:600px; height:600px;
+    background:radial-gradient(circle,rgba(124,92,191,0.12) 0%,transparent 70%);
+    top:-200px; right:-200px; pointer-events:none;
+  }
+  nav {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 60px; position:relative; z-index:10;
+  }
+  .nav-logo { display:flex; align-items:center; gap:10px; font-weight:900; font-size:20px; color:var(--text); letter-spacing:2px; }
+  .nav-logo svg { width:36px; height:36px; }
+  .nav-links { display:flex; gap:8px; }
+  .nav-link { padding:9px 20px; border-radius:50px; font-weight:700; font-size:14px; cursor:pointer; color:var(--muted); transition:.2s; background:transparent; border:none; }
+  .nav-link:hover, .nav-link.active { background:var(--surface); color:var(--text); box-shadow:0 4px 16px var(--shadow); }
+  .nav-right { display:flex; align-items:center; gap:12px; }
+  .btn-signin { padding:10px 28px; border-radius:50px; background:var(--purple); color:#fff; border:none; font-weight:800; font-size:14px; cursor:pointer; box-shadow:0 6px 20px rgba(124,92,191,0.4); transition:.2s; }
+  .btn-signin:hover { background:var(--purple-dark); transform:translateY(-1px); }
+
+  .hero { flex:1; display:flex; align-items:center; padding:20px 60px 40px; gap:40px; position:relative; z-index:10; }
+  .hero-left { flex:0 0 420px; }
+  .hero-tag { display:inline-block; background:linear-gradient(135deg,var(--pink-light),#fde8f0); color:var(--pink); font-weight:800; font-size:13px; padding:6px 16px; border-radius:50px; margin-bottom:16px; letter-spacing:1px; }
+  .hero-title { font-size:72px; font-weight:900; line-height:1; color:var(--text); letter-spacing:3px; margin-bottom:12px; }
+  .hero-subtitle { font-size:18px; font-weight:700; color:var(--pink); margin-bottom:16px; }
+  .hero-desc { color:var(--muted); font-size:16px; line-height:1.7; margin-bottom:36px; }
+  .hero-btns { display:flex; gap:14px; flex-wrap:wrap; }
+  .btn-primary { display:flex; align-items:center; gap:10px; padding:14px 32px; border-radius:50px; background:var(--purple); color:#fff; border:none; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 8px 28px rgba(124,92,191,0.45); transition:.25s; }
+  .btn-primary:hover { background:var(--purple-dark); transform:translateY(-2px); }
+  .btn-secondary { display:flex; align-items:center; gap:10px; padding:14px 28px; border-radius:50px; background:var(--surface); color:var(--text); border:none; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 4px 18px var(--shadow); transition:.25s; }
+  .btn-secondary:hover { transform:translateY(-2px); }
+
+  .hero-center { flex:1; display:flex; justify-content:center; align-items:center; position:relative; height:380px; }
+  .xo-stage { position:relative; width:320px; height:320px; }
+  .shape-base { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:260px; height:80px; background:linear-gradient(180deg,#dcd4f5,#c8bef0); border-radius:50%; box-shadow:0 20px 60px rgba(124,92,191,0.25); }
+  .shape-x { position:absolute; top:20px; left:30px; font-family:'Space Mono',monospace; font-size:160px; font-weight:700; line-height:1; color:var(--purple); filter:drop-shadow(0 20px 40px rgba(124,92,191,0.5)); animation:float-x 3.5s ease-in-out infinite; }
+  .shape-o { position:absolute; top:60px; right:0; font-family:'Space Mono',monospace; font-size:130px; font-weight:700; line-height:1; color:var(--pink); filter:drop-shadow(0 20px 40px rgba(232,127,160,0.5)); animation:float-o 3s ease-in-out infinite 0.8s; }
+  .shape-dot { position:absolute; border-radius:50%; background:var(--purple-light); animation:float-dot 4s ease-in-out infinite; }
+  .shape-dot:nth-child(3) { width:18px; height:18px; top:10px; right:60px; }
+  .shape-dot:nth-child(4) { width:12px; height:12px; bottom:100px; left:10px; animation-delay:1.5s; background:var(--pink-light); }
+  @keyframes float-x { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+  @keyframes float-o { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  @keyframes float-dot { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-8px) scale(1.1)} }
+
+  /* Mini Game Card */
+  .mini-game-card { width:320px; flex-shrink:0; background:var(--surface); border-radius:28px; box-shadow:0 20px 60px rgba(124,92,191,0.18); padding:20px; }
+  .mgc-players { display:flex; align-items:center; gap:12px; width:100%; margin-bottom:16px; }
+  .mgc-player { flex:1; text-align:center; background:var(--surface2); border-radius:16px; padding:10px 8px; }
+  .mgc-player.active { background:linear-gradient(135deg,#ede8ff,#f7f0ff); }
+  .mgc-p-icon { font-family:'Space Mono',monospace; font-size:22px; font-weight:700; }
+  .mgc-p-icon.x { color:var(--x-color); } .mgc-p-icon.o { color:var(--o-color); }
+  .mgc-p-label { font-size:11px; font-weight:700; color:var(--muted); margin-top:2px; }
+  .mgc-p-dots { display:flex; gap:4px; justify-content:center; margin-top:6px; }
+  .mgc-dot { width:8px; height:8px; border-radius:50%; background:var(--border); }
+  .mgc-dot.filled.x { background:var(--x-color); } .mgc-dot.filled.o { background:var(--o-color); }
+  .mgc-vs { font-weight:900; color:var(--muted); font-size:13px; }
+  .mgc-turn { text-align:center; font-weight:800; color:var(--purple); font-size:13px; margin-bottom:14px; }
+  .mgc-board { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:14px; }
+  .mgc-cell { aspect-ratio:1; border-radius:14px; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:24px; font-weight:700; border:2px solid transparent; }
+  .mgc-cell.x { color:var(--x-color); background:#ede8ff; border-color:#d4c9f5; }
+  .mgc-cell.o { color:var(--o-color); background:#fde8f0; border-color:#f5c5d8; }
+  .mgc-hint { text-align:center; font-size:11px; color:var(--muted); font-weight:600; margin-bottom:16px; }
+  .mgc-controls { display:flex; align-items:center; gap:10px; }
+  .mgc-btn-icon { width:42px; height:42px; border-radius:50%; background:var(--surface2); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .mgc-btn-new { flex:1; padding:11px; border-radius:50px; background:var(--purple); color:#fff; border:none; font-weight:800; font-size:14px; cursor:pointer; box-shadow:0 6px 20px rgba(124,92,191,0.35); }
+  .mgc-hint-badge { width:42px; height:42px; border-radius:50%; position:relative; background:var(--surface2); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .mgc-hint-count { position:absolute; top:-2px; right:-2px; width:16px; height:16px; border-radius:50%; background:var(--purple); color:#fff; font-size:9px; font-weight:900; display:flex; align-items:center; justify-content:center; }
+
+  .features { padding:0 60px 50px; display:flex; gap:16px; position:relative; z-index:10; }
+  .feature-card { flex:1; background:var(--surface); border-radius:20px; padding:20px; display:flex; align-items:flex-start; gap:14px; box-shadow:0 4px 18px var(--shadow); transition:.25s; }
+  .feature-card:hover { transform:translateY(-4px); }
+  .feature-icon { width:44px; height:44px; border-radius:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:20px; }
+  .feature-title { font-weight:800; font-size:15px; margin-bottom:4px; }
+  .feature-desc { font-size:13px; color:var(--muted); line-height:1.5; }
+  footer { padding:20px 60px; display:flex; align-items:center; justify-content:space-between; position:relative; z-index:10; border-top:1px solid var(--border); }
+  footer span { font-size:13px; color:var(--muted); font-weight:600; }
+  .foot-icons { display:flex; gap:10px; }
+  .foot-icon { width:34px; height:34px; border-radius:50%; background:var(--surface); display:flex; align-items:center; justify-content:center; font-size:14px; box-shadow:0 2px 8px var(--shadow); cursor:pointer; transition:.2s; }
+  .foot-icon:hover { transform:scale(1.1); }
+
+  /* ── MODE SELECT ── */
+  #screen-mode { flex-direction:column; align-items:center; justify-content:center; background:linear-gradient(135deg,#f0eef8 0%,#fae8ef 100%); padding:40px; position:relative; overflow:hidden; }
+  .mode-header { text-align:center; margin-bottom:40px; position:relative; z-index:2; }
+  .mode-header h2 { font-size:36px; font-weight:900; color:var(--text); margin-bottom:8px; }
+  .mode-header p { color:var(--muted); font-size:16px; font-weight:600; }
+  .mode-cards { display:flex; gap:24px; flex-wrap:wrap; justify-content:center; position:relative; z-index:2; margin-bottom:40px; }
+  .mode-card { width:220px; background:var(--surface); border-radius:28px; padding:32px 24px; text-align:center; cursor:pointer; box-shadow:0 8px 32px var(--shadow); border:3px solid transparent; transition:.3s; position:relative; overflow:hidden; }
+  .mode-card:hover { transform:translateY(-6px); border-color:var(--purple-light); }
+  .mode-card.selected { border-color:var(--purple); box-shadow:0 12px 40px rgba(124,92,191,0.35); }
+  .mode-card-emoji { font-size:48px; margin-bottom:14px; display:block; }
+  .mode-card-title { font-size:18px; font-weight:900; color:var(--text); margin-bottom:8px; }
+  .mode-card-desc { font-size:13px; color:var(--muted); line-height:1.5; }
+  .mode-card-badge { position:absolute; top:14px; right:14px; background:var(--purple); color:#fff; font-size:10px; font-weight:800; padding:3px 8px; border-radius:20px; }
+  .mode-subopts { background:var(--surface); border-radius:24px; padding:28px; width:100%; max-width:560px; box-shadow:0 8px 32px var(--shadow); position:relative; z-index:2; margin-bottom:24px; }
+  .subopt-title { font-weight:900; font-size:15px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+  .segmented { display:flex; background:var(--surface2); border-radius:14px; padding:4px; gap:4px; margin-bottom:16px; }
+  .seg-btn { flex:1; padding:9px; border-radius:10px; border:none; background:transparent; color:var(--muted); font-weight:700; font-size:13px; cursor:pointer; transition:.2s; font-family:'Nunito',sans-serif; }
+  .seg-btn.active { background:var(--purple); color:#fff; box-shadow:0 4px 12px rgba(124,92,191,0.35); }
+  .mode-start-btn { width:100%; max-width:360px; padding:16px; border-radius:50px; background:var(--purple); color:#fff; border:none; font-weight:900; font-size:17px; cursor:pointer; box-shadow:0 8px 28px rgba(124,92,191,0.45); transition:.25s; position:relative; z-index:2; font-family:'Nunito',sans-serif; }
+  .mode-start-btn:hover { background:var(--purple-dark); transform:translateY(-2px); }
+  .back-btn { position:absolute; top:20px; left:20px; background:var(--surface); border:none; cursor:pointer; padding:10px 18px; border-radius:50px; font-weight:800; color:var(--muted); font-size:14px; box-shadow:0 4px 14px var(--shadow); transition:.2s; z-index:10; font-family:'Nunito',sans-serif; }
+  .back-btn:hover { color:var(--text); }
+
+  /* ── GAME SCREEN ── */
+  #screen-game { flex-direction:column; align-items:center; background:linear-gradient(135deg,#f0eef8 0%,#fae8ef 100%); padding:20px; min-height:100vh; }
+  .game-nav { width:100%; max-width:560px; display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .game-logo { font-weight:900; font-size:18px; letter-spacing:2px; color:var(--text); }
+  .scoreboard { background:var(--surface); border-radius:24px; padding:20px 24px; display:flex; align-items:center; box-shadow:0 6px 24px var(--shadow); margin-bottom:16px; width:100%; max-width:560px; }
+  .score-side { flex:1; text-align:center; }
+  .score-icon { font-family:'Space Mono',monospace; font-weight:700; font-size:28px; margin-bottom:2px; }
+  .score-icon.x { color:var(--x-color); } .score-icon.o { color:var(--o-color); }
+  .score-label { font-size:11px; font-weight:700; color:var(--muted); letter-spacing:1px; }
+  .score-num { font-size:28px; font-weight:900; margin-top:4px; }
+  .score-num.x { color:var(--x-color); } .score-num.o { color:var(--o-color); }
+  .score-center { flex:0 0 140px; text-align:center; }
+  .score-vs { font-size:12px; font-weight:800; color:var(--muted); letter-spacing:2px; margin-bottom:4px; }
+  .score-timer { font-family:'Space Mono',monospace; font-size:22px; font-weight:700; color:var(--text); }
+  .score-timer.urgent { color:var(--pink); animation:pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+  .status-bar { background:var(--surface); border-radius:16px; padding:12px 20px; text-align:center; font-weight:800; font-size:16px; color:var(--purple); box-shadow:0 4px 16px var(--shadow); width:100%; max-width:560px; margin-bottom:8px; transition:.3s; }
+  .status-bar.win { color:var(--green); background:#e8faf2; }
+  .status-bar.lose { color:var(--pink); background:#fde8f0; }
+  .status-bar.thinking { color:var(--muted); }
+
+  .board-wrap { background:var(--surface); border-radius:28px; padding:20px; box-shadow:0 12px 48px var(--shadow); margin:16px 0; width:100%; max-width:360px; }
+  .board { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+
+  /* ── CELL — the fix is here ── */
+  .cell {
+    aspect-ratio:1; border-radius:16px;
+    background:var(--surface2);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono',monospace; font-size:32px; font-weight:700;
+    cursor:pointer; transition:.2s;
+    border:2px solid transparent;
+    user-select:none;
+  }
+  .cell:hover { background:#ede8ff; border-color:var(--purple-light); transform:scale(1.04); }
+  .cell.x { color:var(--x-color); background:#ede8ff; border-color:#d4c9f5; cursor:default; }
+  .cell.o { color:var(--o-color); background:#fde8f0; border-color:#f5c5d8; cursor:default; }
+  .cell.x:hover, .cell.o:hover { transform:none; }
+  .cell.oldest { opacity:0.4; border-color:var(--pink)!important; border-style:dashed!important; }
+  .cell.win { background:#e8faf2!important; border-color:#5ecf9a!important; color:#2d9e6b!important; animation:win-pop .4s ease; }
+  .cell.disabled { cursor:not-allowed; opacity:0.6; }
+  .cell.disabled:hover { transform:none; background:var(--surface2); border-color:transparent; }
+  @keyframes win-pop { 0%{transform:scale(0.9)} 60%{transform:scale(1.1)} 100%{transform:scale(1)} }
+  @keyframes place-pop { 0%{transform:scale(0.7);opacity:0} 70%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+  .cell.just-placed { animation:place-pop .25s ease; }
+
+  .piece-tracker { background:var(--surface); border-radius:16px; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 16px var(--shadow); width:100%; max-width:360px; margin-bottom:14px; }
+  .tracker-side { display:flex; align-items:center; gap:8px; }
+  .tracker-icon { font-family:'Space Mono',monospace; font-weight:700; font-size:16px; }
+  .tracker-icon.x { color:var(--x-color); } .tracker-icon.o { color:var(--o-color); }
+  .tracker-dots { display:flex; gap:5px; }
+  .t-dot { width:12px; height:12px; border-radius:50%; background:var(--border); transition:.3s; border:2px solid var(--border); }
+  .t-dot.filled.x { background:var(--x-color); border-color:var(--x-color); }
+  .t-dot.filled.o { background:var(--o-color); border-color:var(--o-color); }
+  .t-dot.danger { border-color:var(--pink)!important; background:var(--pink-light)!important; }
+
+  .game-controls { display:flex; gap:10px; width:100%; max-width:360px; }
+  .ava-controls { display:flex; gap:10px; width:100%; max-width:360px; margin-bottom:10px; }
+  .ctrl-btn { flex:1; padding:12px; border-radius:50px; border:none; background:var(--surface); color:var(--text); font-weight:800; font-size:14px; cursor:pointer; box-shadow:0 4px 14px var(--shadow); transition:.2s; display:flex; align-items:center; justify-content:center; gap:6px; font-family:'Nunito',sans-serif; }
+  .ctrl-btn:hover { background:var(--surface2); transform:translateY(-1px); }
+  .ctrl-btn.primary { background:var(--purple); color:#fff; box-shadow:0 6px 20px rgba(124,92,191,0.4); }
+  .ctrl-btn.primary:hover { background:var(--purple-dark); }
+
+  .move-log { background:var(--surface); border-radius:16px; padding:12px 16px; width:100%; max-width:360px; box-shadow:0 4px 14px var(--shadow); max-height:100px; overflow-y:auto; margin-top:10px; }
+  .log-entry { font-size:12px; font-weight:600; padding:2px 0; }
+  .log-entry.x-log { color:var(--x-color); }
+  .log-entry.o-log { color:var(--o-color); }
+  .log-entry.sys-log { color:var(--muted); font-style:italic; }
+  .log-entry.win-log { color:var(--green); font-weight:800; }
+
+  /* MODAL */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(45,32,96,0.5); backdrop-filter:blur(8px); z-index:100; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--surface); border-radius:32px; padding:40px; text-align:center; max-width:340px; width:90%; box-shadow:0 24px 80px rgba(124,92,191,0.3); animation:modal-in .3s ease; }
+  @keyframes modal-in { from{transform:scale(0.85);opacity:0} to{transform:scale(1);opacity:1} }
+  .modal-emoji { font-size:56px; margin-bottom:16px; display:block; }
+  .modal-title { font-size:28px; font-weight:900; color:var(--text); margin-bottom:8px; }
+  .modal-sub { font-size:15px; color:var(--muted); font-weight:600; margin-bottom:28px; }
+  .modal-btns { display:flex; flex-direction:column; gap:10px; }
+  .modal-btn { padding:14px; border-radius:50px; border:none; font-weight:800; font-size:15px; cursor:pointer; transition:.2s; font-family:'Nunito',sans-serif; }
+  .modal-btn.primary { background:var(--purple); color:#fff; box-shadow:0 6px 20px rgba(124,92,191,0.4); }
+  .modal-btn.primary:hover { background:var(--purple-dark); }
+  .modal-btn.secondary { background:var(--surface2); color:var(--text); }
+  .modal-btn.secondary:hover { background:var(--border); }
+
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-thumb { background:var(--purple-light); border-radius:4px; }
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<section id="screen-landing" class="screen active">
+  <nav>
+    <div class="nav-logo">
+      <svg viewBox="0 0 36 36" fill="none">
+        <rect width="36" height="36" rx="10" fill="#ede8ff"/>
+        <text x="4" y="25" font-family="Space Mono" font-weight="700" font-size="18" fill="#7c5cbf">X</text>
+        <text x="17" y="25" font-family="Space Mono" font-weight="700" font-size="18" fill="#e87fa0">O</text>
+      </svg>
+      TAHADANI
+    </div>
+    <div class="nav-links">
+      <button class="nav-link active">Home</button>
+      <button class="nav-link" onclick="showHowTo()">How to Play</button>
+      <button class="nav-link">Leaderboard</button>
+    </div>
+    <div class="nav-right">
+      <button class="btn-signin" onclick="goToMode()">Play Now</button>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-left">
+      <span class="hero-tag">3-Pieces Tic-Tac-Toe</span>
+      <div class="hero-title">TAHADANI</div>
+      <div class="hero-subtitle">Play Smart — Outsmart the AI</div>
+      <p class="hero-desc">A modern twist on the classic game.<br>Each player has only 3 pieces — place a 4th and the oldest disappears.<br>The AI is ready to challenge you!</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="goToMode()">▶ Play Now</button>
+        <button class="btn-secondary" onclick="goToMode('ava')">🤖 AI Battle</button>
+      </div>
+    </div>
+    <div class="hero-center">
+      <div class="xo-stage">
+        <div class="shape-dot"></div>
+        <div class="shape-dot"></div>
+        <div class="shape-x">X</div>
+        <div class="shape-o">O</div>
+        <div class="shape-base"></div>
+      </div>
+    </div>
+    <div class="mini-game-card">
+      <div class="mgc-players">
+        <div class="mgc-player active">
+          <div class="mgc-p-icon x">X</div>
+          <div class="mgc-p-label">You</div>
+          <div class="mgc-p-dots">
+            <div class="mgc-dot filled x"></div>
+            <div class="mgc-dot filled x"></div>
+            <div class="mgc-dot"></div>
+          </div>
+        </div>
+        <div class="mgc-vs">VS</div>
+        <div class="mgc-player">
+          <div class="mgc-p-icon o">O</div>
+          <div class="mgc-p-label">AI</div>
+          <div class="mgc-p-dots">
+            <div class="mgc-dot filled o"></div>
+            <div class="mgc-dot filled o"></div>
+            <div class="mgc-dot filled o"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mgc-turn">Your Turn</div>
+      <div class="mgc-board">
+        <div class="mgc-cell x">X</div><div class="mgc-cell o">O</div><div class="mgc-cell x">X</div>
+        <div class="mgc-cell o">O</div><div class="mgc-cell"></div><div class="mgc-cell x">X</div>
+        <div class="mgc-cell"></div><div class="mgc-cell"></div><div class="mgc-cell o">O</div>
+      </div>
+      <div class="mgc-hint">Each player has only 3 pieces on the board at once</div>
+      <div class="mgc-controls">
+        <button class="mgc-btn-icon">↩</button>
+        <button class="mgc-btn-new" onclick="goToMode()">↺ New Game</button>
+        <button class="mgc-hint-badge">💡<span class="mgc-hint-count">3</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#ede8ff">⬛</div>
+      <div><div class="feature-title">3 Pieces Only</div><div class="feature-desc">Each player can have at most 3 pieces on the board at the same time</div></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#fde8f0">🤖</div>
+      <div><div class="feature-title">AI Opponent</div><div class="feature-desc">Challenge AI using Alpha-Beta and MCTS algorithms at different difficulty levels</div></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#fff8e0">⚔️</div>
+      <div><div class="feature-title">AI Battle</div><div class="feature-desc">Watch two AIs fight each other automatically using different algorithms</div></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#e8faf2">✨</div>
+      <div><div class="feature-title">Modern Design</div><div class="feature-desc">Beautiful, fast, and responsive gaming experience on all devices</div></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>© 2024 TAHADANI</span>
+    <span>Made with 💜 for strategy lovers</span>
+    <div class="foot-icons">
+      <div class="foot-icon">🐦</div>
+      <div class="foot-icon">💬</div>
+      <div class="foot-icon">📸</div>
+    </div>
+  </footer>
+</section>
+
+
+<!-- MODE SELECT -->
+<section id="screen-mode" class="screen">
+  <button class="back-btn" onclick="showScreen('screen-landing')">← Back</button>
+  <div class="mode-header">
+    <h2>Choose Game Mode</h2>
+    <p>Play against the AI or watch an AI Battle</p>
+  </div>
+  <div class="mode-cards">
+    <div class="mode-card" id="mc-hva" onclick="selectMode('hva')">
+      <span class="mode-card-emoji">🧑‍💻</span>
+      <div class="mode-card-title">Human vs AI</div>
+      <div class="mode-card-desc">Play against the AI and test your skills</div>
+    </div>
+    <div class="mode-card" id="mc-ava" onclick="selectMode('ava')">
+      <span class="mode-card-emoji">🤖</span>
+      <div class="mode-card-title">AI vs AI</div>
+      <div class="mode-card-desc">Watch two algorithms battle it out automatically</div>
+      <span class="mode-card-badge">New</span>
+    </div>
+  </div>
+
+  <div class="mode-subopts" id="opts-hva" style="display:none">
+    <div class="subopt-title">You Play As</div>
+    <div class="segmented">
+      <button class="seg-btn active" onclick="setSide('X',this)">X (First)</button>
+      <button class="seg-btn" onclick="setSide('O',this)">O (Second)</button>
+    </div>
+    <div class="subopt-title">AI Algorithm</div>
+    <div class="segmented">
+      <button class="seg-btn active" onclick="setAlgo('alphabeta',this)">Alpha-Beta</button>
+      <button class="seg-btn" onclick="setAlgo('mcts',this)">MCTS</button>
+    </div>
+    <div id="diff-row">
+      <div class="subopt-title">Difficulty (Search Depth)</div>
+      <div class="segmented">
+        <button class="seg-btn" onclick="setDiff('k2',this)">k=2 Easy</button>
+        <button class="seg-btn active" onclick="setDiff('k5',this)">k=5 Medium</button>
+        <button class="seg-btn" onclick="setDiff('k10',this)">k=10 Hard</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mode-subopts" id="opts-ava" style="display:none">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div class="subopt-title">Agent X</div>
+        <div class="segmented">
+          <button class="seg-btn active" onclick="setAvaX('alphabeta',this)">Alpha-Beta</button>
+          <button class="seg-btn" onclick="setAvaX('mcts',this)">MCTS</button>
+        </div>
+        <div id="ava-dx-row">
+          <div class="subopt-title">X Depth</div>
+          <div class="segmented">
+            <button class="seg-btn" onclick="setAvaDx('k2',this)">k=2</button>
+            <button class="seg-btn active" onclick="setAvaDx('k5',this)">k=5</button>
+            <button class="seg-btn" onclick="setAvaDx('k10',this)">k=10</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="subopt-title">Agent O</div>
+        <div class="segmented">
+          <button class="seg-btn" onclick="setAvaO('alphabeta',this)">Alpha-Beta</button>
+          <button class="seg-btn active" onclick="setAvaO('mcts',this)">MCTS</button>
+        </div>
+        <div id="ava-do-row" style="display:none">
+          <div class="subopt-title">O Depth</div>
+          <div class="segmented">
+            <button class="seg-btn" onclick="setAvaDo('k2',this)">k=2</button>
+            <button class="seg-btn active" onclick="setAvaDo('k5',this)">k=5</button>
+            <button class="seg-btn" onclick="setAvaDo('k10',this)">k=10</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="mode-start-btn" onclick="startGame()">▶ Start Game</button>
+</section>
+
+
+<!-- GAME SCREEN -->
+<section id="screen-game" class="screen">
+  <div class="game-nav">
+    <span class="game-logo">TAHADANI</span>
+    <button class="ctrl-btn" style="flex:0;padding:8px 16px" onclick="showScreen('screen-landing')">⌂ Home</button>
+  </div>
+
+  <div class="scoreboard">
+    <div class="score-side">
+      <div class="score-icon x">X</div>
+      <div class="score-label" id="sc-x-label">You</div>
+      <div class="score-num x" id="sc-x-num">0</div>
+    </div>
+    <div class="score-center">
+      <div class="score-vs">VS</div>
+      <div class="score-timer" id="g-timer">20:00</div>
+    </div>
+    <div class="score-side">
+      <div class="score-icon o">O</div>
+      <div class="score-label" id="sc-o-label">AI</div>
+      <div class="score-num o" id="sc-o-num">0</div>
+    </div>
+  </div>
+
+  <div class="status-bar" id="g-status">Your Turn</div>
+
+  <div class="board-wrap">
+    <div class="board" id="g-board">
+      <!-- cells injected by JS -->
+    </div>
+  </div>
+
+  <div class="piece-tracker">
+    <div class="tracker-side">
+      <span class="tracker-icon x">X</span>
+      <div class="tracker-dots" id="td-x">
+        <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
+      </div>
+    </div>
+    <span style="font-size:12px;font-weight:700;color:var(--muted)">Pieces on Board</span>
+    <div class="tracker-side">
+      <div class="tracker-dots" id="td-o">
+        <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
+      </div>
+      <span class="tracker-icon o">O</span>
+    </div>
+  </div>
+
+  <div class="ava-controls" id="ava-ctrl" style="display:none">
+    <button class="ctrl-btn" onclick="avaStep()">Step →</button>
+    <button class="ctrl-btn primary" id="ava-auto-btn" onclick="avaToggle()">▶ Auto Play</button>
+  </div>
+
+  <div class="game-controls">
+    <button class="ctrl-btn" onclick="resetGame()">↺ New Game</button>
+    <button class="ctrl-btn primary" onclick="goToMode()">⚙ Settings</button>
+  </div>
+
+  <div class="move-log" id="g-log"></div>
+</section>
+
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <span class="modal-emoji" id="m-emoji">🎉</span>
+    <div class="modal-title" id="m-title">You Won!</div>
+    <div class="modal-sub" id="m-sub">Great job, keep challenging yourself!</div>
+    <div class="modal-btns">
+      <button class="modal-btn primary" onclick="resetGame();closeModal()">↺ New Game</button>
+      <button class="modal-btn secondary" onclick="closeModal();goToMode()">⚙ Change Settings</button>
+      <button class="modal-btn secondary" onclick="closeModal();showScreen('screen-landing')">⌂ Home</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════
+const TIME_LIMIT = 20 * 60;
+
+let cfg = {
+  mode: 'hva',
+  humanSide: 'X',
+  aiType: 'alphabeta',
+  diff: 'k5',
+  avaX: 'alphabeta', avaO: 'mcts',
+  avaDx: 'k5', avaDo: 'k5',
+};
+
+let scores = { X: 0, O: 0 };
+let gameOver = false;
+let aiRunning = false;
+let avaOn = false;
+let startTime = 0;
+let timerInterval = null;
+
+// ═══════════════════════════════════════════
+//  BUILD BOARD CELLS
+// ═══════════════════════════════════════════
+function buildBoard() {
+  const board = document.getElementById('g-board');
+  board.innerHTML = '';
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.dataset.idx = i;
+    cell.addEventListener('click', () => humanClick(i));
+    board.appendChild(cell);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  FLASK COMMUNICATION
+// ═══════════════════════════════════════════
+async function sendMove(row, col) {
+  const res = await fetch('/move', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ row, col })
+  });
+  return await res.json();
+}
+
+async function sendReset(mode, humanSide, aiType, diff, avaX, avaO, avaDx, avaDo) {
+  const res = await fetch('/reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mode, humanSide, aiType, diff, avaX, avaO, avaDx, avaDo })
+  });
+  return await res.json();
+}
+
+async function sendAvaStep() {
+  const res = await fetch('/ava_step', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({})
+  });
+  return await res.json();
+}
+
+// ═══════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════
+function renderFromServer(data) {
+  // data.board: flat 9-element array [' ','X','O',...]
+  // data.x_history, data.o_history: list of flat indices
+  // data.winner: null | 'X' | 'O'
+  // data.current_player: 'X' | 'O'
+  // data.ai_move: flat index | null
+
+  const cells = document.querySelectorAll('#g-board .cell');
+  const board = data.board;
+  const cur = data.current_player;
+  const xH = data.x_history || [];
+  const oH = data.o_history || [];
+  const curH = cur === 'X' ? xH : oH;
+  const willRemove = curH.length >= 3 ? curH[0] : -1;
+  const winLine = new Set(data.win_line || []);
+
+  cells.forEach((cell, i) => {
+    cell.className = 'cell';
+    const v = board[i];
+    if (v === 'X' || v === 'O') {
+      cell.textContent = v;
+      cell.classList.add(v.toLowerCase());
+      if (winLine.has(i)) cell.classList.add('win');
+      else if (i === willRemove && !gameOver) cell.classList.add('oldest');
+    } else {
+      cell.textContent = '';
+      // الخلية قابلة للضغط فقط لو: اللعبة ما انتهت + مو AVA + دور اللاعب البشري + AI مو شغال
+      const isHumanTurn = cfg.mode === 'hva' && cur === cfg.humanSide && !aiRunning && !gameOver;
+      if (!isHumanTurn) cell.classList.add('disabled');
+    }
+  });
+
+  // dots
+  ['X', 'O'].forEach(p => {
+    const h = p === 'X' ? xH : oH;
+    const dots = document.querySelectorAll(`#td-${p.toLowerCase()} .t-dot`);
+    dots.forEach((d, i) => {
+      d.className = 't-dot';
+      if (i < h.length) {
+        d.classList.add('filled', p.toLowerCase());
+        if (i === 0 && h.length === 3) d.classList.add('danger');
+      }
+    });
+  });
+}
+
+function setStatus(msg, type = '') {
+  const el = document.getElementById('g-status');
+  el.textContent = msg;
+  el.className = 'status-bar' + (type ? ' ' + type : '');
+}
+
+function addLog(msg, tag) {
+  const log = document.getElementById('g-log');
+  const div = document.createElement('div');
+  div.className = `log-entry ${tag}-log`;
+  div.textContent = '› ' + msg;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+// ═══════════════════════════════════════════
+//  TIMER
+// ═══════════════════════════════════════════
+function tickTimer() {
+  const elapsed = (Date.now() - startTime) / 1000;
+  const rem = Math.max(0, TIME_LIMIT - elapsed);
+  const m = Math.floor(rem / 60), s = Math.floor(rem % 60);
+  const el = document.getElementById('g-timer');
+  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  el.className = 'score-timer' + (rem < 60 ? ' urgent' : '');
+  if (rem <= 0 && !gameOver) {
+    gameOver = true; stopAva();
+    setStatus("⏰ Time's up!", '');
+    addLog("Game stopped: 20-minute limit reached.", 'sys');
+    clearInterval(timerInterval);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  HUMAN CLICK  ← THE KEY FIX
+// ═══════════════════════════════════════════
+async function humanClick(idx) {
+  // منع الضغط لو اللعبة انتهت أو AI شغال أو وضع AVA
+  if (gameOver || aiRunning || cfg.mode === 'ava') return;
+
+  const cell = document.querySelectorAll('#g-board .cell')[idx];
+  // منع الضغط لو الخلية ممتلئة
+  if (cell.classList.contains('x') || cell.classList.contains('o')) return;
+
+  const row = Math.floor(idx / 3);
+  const col = idx % 3;
+
+  aiRunning = true;
+  setStatus('AI is thinking…', 'thinking');
+
+  try {
+    const data = await sendMove(row, col);
+    aiRunning = false;
+    handleServerResponse(data, idx);
+  } catch (e) {
+    console.error(e);
+    setStatus('Connection error — is Flask running?', 'lose');
+    aiRunning = false;
+  }
+}
+
+function handleServerResponse(data, humanIdx) {
+  gameOver = false;
+
+  // log human move
+  if (humanIdx !== undefined && humanIdx !== null) {
+    const r = Math.floor(humanIdx / 3), c = humanIdx % 3;
+    addLog(`${cfg.humanSide} → (${r},${c})`, cfg.humanSide.toLowerCase());
+  }
+
+  // log AI move
+  if (data.ai_move !== null && data.ai_move !== undefined) {
+    const am = data.ai_move;
+    const ar = Math.floor(am / 3), ac = am % 3;
+    const aiSide = cfg.humanSide === 'X' ? 'O' : 'X';
+    addLog(`AI (${aiSide}) → (${ar},${ac})`, aiSide.toLowerCase());
+  }
+
+  // check winner
+  if (data.winner) {
+    gameOver = true;
+    scores[data.winner]++;
+    document.getElementById(`sc-${data.winner.toLowerCase()}-num`).textContent = scores[data.winner];
+    renderFromServer(data);
+    stopAva(); clearInterval(timerInterval);
+    const isHuman = cfg.mode === 'hva' && data.winner === cfg.humanSide;
+    const msg = cfg.mode === 'ava' ? `${data.winner} Wins! 🎉` : (isHuman ? '🎉 You Win!' : 'AI Wins!');
+    const type = (isHuman || cfg.mode === 'ava') ? 'win' : 'lose';
+    setStatus(msg, type);
+    addLog(msg, 'win');
+    setTimeout(() => showModal(isHuman || cfg.mode === 'ava', data.winner, cfg.mode === 'ava'), 700);
+    aiRunning = false;
+    return;
+  }
+
+  renderFromServer(data);
+
+  // whose turn next
+  const nextPlayer = data.current_player;
+  if (cfg.mode === 'hva') {
+    if (nextPlayer === cfg.humanSide) {
+      setStatus('Your Turn');
+    } else {
+      setStatus('Your Turn'); // AI already moved server-side; back to human
+    }
+  } else {
+    setStatus(`${nextPlayer}'s turn`);
+  }
+
+  aiRunning = false;
+}
+
+// ═══════════════════════════════════════════
+//  RESET
+// ═══════════════════════════════════════════
+async function resetGame() {
+  stopAva();
+  gameOver = false;
+  aiRunning = false;
+  scores = { X: 0, O: 0 };
+  document.getElementById('sc-x-num').textContent = '0';
+  document.getElementById('sc-o-num').textContent = '0';
+  document.getElementById('g-log').innerHTML = '';
+  startTime = Date.now();
+  clearInterval(timerInterval);
+  timerInterval = setInterval(tickTimer, 1000);
+
+  try {
+    const data = await sendReset(
+      cfg.mode, cfg.humanSide, cfg.aiType, cfg.diff,
+      cfg.avaX, cfg.avaO, cfg.avaDx, cfg.avaDo
+    );
+    renderFromServer(data);
+    addLog('─── New game ───', 'sys');
+
+    aiRunning = false;
+    if (cfg.mode === 'hva') {
+      setStatus('Your Turn');
+    } else {
+      setStatus(`${data.current_player}'s turn`);
+    }
+  } catch (e) {
+    setStatus('Cannot connect to Flask server!', 'lose');
+    // fallback: render empty board
+    const cells = document.querySelectorAll('#g-board .cell');
+    cells.forEach(c => { c.className='cell'; c.textContent=''; });
+  }
+}
+
+// ═══════════════════════════════════════════
+//  AVA
+// ═══════════════════════════════════════════
+async function avaStep() {
+  if (gameOver) { resetGame(); return; }
+  if (aiRunning) return;
+  aiRunning = true;
+  try {
+    const data = await sendAvaStep();
+    const cur = data.last_move_player || '?';
+    const m = data.last_move;
+    if (m !== undefined && m !== null) {
+      addLog(`${cur} → (${Math.floor(m/3)},${m%3})`, cur.toLowerCase());
+    }
+    if (data.winner) {
+      gameOver = true;
+      scores[data.winner]++;
+      document.getElementById(`sc-${data.winner.toLowerCase()}-num`).textContent = scores[data.winner];
+      renderFromServer(data);
+      stopAva(); clearInterval(timerInterval);
+      setStatus(`${data.winner} Wins! 🎉`, 'win');
+      addLog(`${data.winner} Wins!`, 'win');
+      setTimeout(() => showModal(true, data.winner, true), 700);
+    } else {
+      renderFromServer(data);
+      setStatus(`${data.current_player}'s turn`);
+    }
+  } catch(e) {
+    setStatus('Connection error', 'lose');
+  }
+  aiRunning = false;
+}
+
+function avaToggle() {
+  if (avaOn) { stopAva(); }
+  else { avaOn = true; document.getElementById('ava-auto-btn').textContent = '■ Stop'; avaLoop(); }
+}
+
+function avaLoop() {
+  if (!avaOn || gameOver) { stopAva(); return; }
+  if (aiRunning) { setTimeout(avaLoop, 100); return; }
+  avaStep().then(() => { if (avaOn && !gameOver) setTimeout(avaLoop, 700); });
+}
+
+function stopAva() {
+  avaOn = false;
+  const b = document.getElementById('ava-auto-btn');
+  if (b) b.textContent = '▶ Auto Play';
+}
+
+// ═══════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════
+function showModal(win, player, isAva) {
+  document.getElementById('m-emoji').textContent = win ? '🎉' : '😅';
+  document.getElementById('m-title').textContent = isAva ? `${player} Wins!` : win ? 'You Win! 🎉' : 'AI Wins!';
+  document.getElementById('m-sub').textContent = isAva ? `${player}'s algorithm came out on top` :
+    win ? 'Amazing! Keep challenging yourself!' : 'Try again and beat the AI!';
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+// ═══════════════════════════════════════════
+//  NAV / SETTINGS
+// ═══════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goToMode(preset) {
+  if (preset) selectMode(preset);
+  showScreen('screen-mode');
+}
+
+function startGame() {
+  // update score labels
+  if (cfg.mode === 'hva') {
+    document.getElementById('sc-x-label').textContent = cfg.humanSide === 'X' ? 'You' : 'AI';
+    document.getElementById('sc-o-label').textContent = cfg.humanSide === 'O' ? 'You' : 'AI';
+  } else {
+    document.getElementById('sc-x-label').textContent = `X (${cfg.avaX})`;
+    document.getElementById('sc-o-label').textContent = `O (${cfg.avaO})`;
+  }
+  document.getElementById('ava-ctrl').style.display = cfg.mode === 'ava' ? 'flex' : 'none';
+  showScreen('screen-game');
+  resetGame();
+}
+
+function selectMode(m) {
+  cfg.mode = m;
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  const el = document.getElementById('mc-' + m);
+  if (el) el.classList.add('selected');
+  document.getElementById('opts-hva').style.display = m === 'hva' ? 'block' : 'none';
+  document.getElementById('opts-ava').style.display = m === 'ava' ? 'block' : 'none';
+}
+
+function setSide(v, btn) { cfg.humanSide = v; activeSeg(btn); }
+function setAlgo(v, btn) {
+  cfg.aiType = v; activeSeg(btn);
+  document.getElementById('diff-row').style.display = v === 'alphabeta' ? 'block' : 'none';
+}
+function setDiff(v, btn)  { cfg.diff = v; activeSeg(btn); }
+function setAvaX(v, btn)  { cfg.avaX = v; activeSeg(btn); document.getElementById('ava-dx-row').style.display = v==='alphabeta'?'block':'none'; }
+function setAvaO(v, btn)  { cfg.avaO = v; activeSeg(btn); document.getElementById('ava-do-row').style.display = v==='alphabeta'?'block':'none'; }
+function setAvaDx(v, btn) { cfg.avaDx = v; activeSeg(btn); }
+function setAvaDo(v, btn) { cfg.avaDo = v; activeSeg(btn); }
+
+function activeSeg(btn) {
+  btn.parentElement.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function showHowTo() {
+  alert('How to Play:\n\n• Each player places their piece in an empty cell\n• Each player can only have 3 pieces on the board at once\n• When you place a 4th piece, your oldest piece is automatically removed\n• First to get 3 in a row, column, or diagonal wins\n• Maximum game time is 20 minutes');
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+buildBoard();
+selectMode('hva');
+</script>
+</body>
+</html>
