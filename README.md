@@ -1,56 +1,39 @@
-# TAHADANI ✦
+# 🎮 TAHADANI — 3-Pieces Tic-Tac-Toe with AI
 
-A modern twist on Tic-Tac-Toe.
+An innovative and strategic twist on the classic Tic-Tac-Toe game, built using **Python** and **Flask**. This project features a unique continuous-movement mechanic and an advanced AI opponent utilizing sophisticated search algorithms.
 
-## About
-TAHADANI is a strategic 3-piece Tic-Tac-Toe game built with Python and Tkinter.
-
-Unlike the classic version, each player can only keep 3 pieces on the board.
-When a 4th piece is placed, the oldest one disappears automatically.
-
-This creates a smarter and more dynamic gameplay experience.
+## 🚀 Live Demo
+You can play the game instantly in your browser without installing anything!
+🔗 **[hanoo.pythonanywhere.com](http://hanoo.pythonanywhere.com)**
 
 ---
 
-## Features
-- Modern UI design
-- Human vs AI
-- AI vs AI
-- Alpha-Beta algorithm
-- Monte Carlo Tree Search (MCTS)
-- Animated gameplay logic
-- 20-minute timer
-- Score tracking system
+## 📌 Game Concept & Rules
+This is not your average Tic-Tac-Toe. *TAHADANI* forces players to think ahead and manage their board presence carefully:
+* **Max 3 Pieces:** Each player can only have a maximum of 3 pieces on the board at any given time.
+* **The 4th Piece Rule:** When you place your 4th piece, your **oldest piece** currently on the board will automatically disappear!
+* **Winning Condition:** The first player to form a straight line (horizontal, vertical, or diagonal) with 3 active pieces wins the match.
 
 ---
 
-## Technologies Used
-- Python
-- Tkinter
-- Alpha-Beta Pruning
-- Monte Carlo Tree Search (MCTS)
+## 🤖 AI & Algorithms Used
+The game features a powerful built-in AI capable of playing at different difficulty levels using two main algorithms:
+1. **Alpha-Beta Pruning:** An optimized minimax search algorithm that evaluates potential future moves up to a specific depth to make the best tactical decisions.
+2. **MCTS (Monte Carlo Tree Search):** A probabilistic heuristic algorithm that runs randomized simulations to build a decision tree, choosing the path with the highest win rate.
 
 ---
 
-## Game Rules
-- Each player has only 3 active pieces.
-- Placing a 4th piece removes the oldest one.
-- First player to make 3 in a row wins.
+## 💻 Tech Stack
+* **Back-End:** Python & Flask Framework (Handles the game states, AI calculations, and RESTful APIs).
+* **Front-End:** HTML5, CSS3, and JavaScript (Provides a modern, fully responsive UI with dynamic visual feedback for piece expiration and AI thinking states).
 
 ---
 
-## Screenshots
-(Add your screenshots here)
+## 🛠️ Local Setup & Installation
 
----
+If you are a developer and want to run this project locally on your machine, follow these steps:
 
-## Run The Game
-
-```bash
-python main.py
-```
-
----
-
-## Created By
-Hanoof ✦
+1. **Clone the Repository:**
+   ```bash
+   git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
+   cd your-repo-name
