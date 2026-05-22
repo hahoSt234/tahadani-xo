@@ -39,12 +39,11 @@ If you are a developer and want to run this project locally on your machine, fol
    cd your-repo-name
    
  2-**Install Dependencies:**
-
     ```bash
    pip install flask
 
  3-**Run the Application:**
-     Bash
+      ```Bash
      python app.py
 
  4-**Play the Game:**
