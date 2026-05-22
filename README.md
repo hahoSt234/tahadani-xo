@@ -41,7 +41,6 @@ If you are a developer and want to run this project locally on your machine, fol
  2-**Install Dependencies:**
 
     ```bash
-   Bash
    pip install flask
 
  3-**Run the Application:**
