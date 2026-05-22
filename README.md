@@ -39,6 +39,8 @@ If you are a developer and want to run this project locally on your machine, fol
    cd your-repo-name
    
  2-**Install Dependencies:**
+
+    ```bash
    Bash
    pip install flask
 
